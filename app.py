@@ -9,7 +9,6 @@ import gridfs
 app = Flask(__name__)
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['UPLOAD_FOLDER'] = 'uploads'
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['snap']
