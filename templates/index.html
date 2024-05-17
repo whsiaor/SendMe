@@ -16,19 +16,20 @@
     {% for item in items %}
     <li>
         {% if item.type == 'message' %}
-            {{ item.message|urlize }}({{ item.timestamp }})
+        {{ item.message|urlize }} ({{ item.timestamp }})
         <button onclick="copyToClipboard('{{ item.message }}')">Copy</button>
-        <form method="POST" action="{{ url_for('delete_message', timestamp=item.timestamp) }}" style="display:inline;">
-            <input type="hidden" name="timestamp" value="{{ item.timestamp }}">
+        <form method="POST" action="{{ url_for('delete_message', id=item.id) }}" style="display:inline;">
+            <input type="hidden" name="id" value="{{ item.id }}">
             <button type="submit">Delete</button>
         </form>
         {% else %}
-        <img src="{{ url_for('uploaded_file', filename=item.name) }}" width="50px" alt="Image">
-        {{ item.name }}({{ item.timestamp }})
-        <form method="GET" action="{{ url_for('uploaded_file', filename=item.name)}}" style="display:inline;">
+        <img src="{{ url_for('download_file', filename=item.name) }}" width="50px" alt="Image">
+        {{ item.name }} ({{ item.timestamp }})
+        <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
             <button type="submit">Download</button>
         </form>
-        <form method="POST" action="{{ url_for('delete_file', filename=item.name) }}" style="display:inline;">
+        <form method="POST" action="{{ url_for('delete_file', id=item.id) }}" style="display:inline;">
+            <input type="hidden" name="id" value="{{ item.id }}">
             <button type="submit">Delete</button>
         </form>
         {% endif %}
@@ -37,7 +38,12 @@
 </ul>
 <script>
     function copyToClipboard(text) {
-        navigator.clipboard.writeText(text)
+        var tempInput = document.createElement('input');
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
     }
 </script>
 
