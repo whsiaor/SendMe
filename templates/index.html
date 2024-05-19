@@ -3,39 +3,74 @@
 {% block head %}Hello{% endblock%}
 
 {% block body %}
-<form action="{{ url_for('add_message') }}" method="POST">
-    <textarea id="message" name="message" rows="4" cols="50"></textarea><br>
-    <input type="submit" value="Submit">
-</form>
-<form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="Upload">
-</form>
+<div class="container">
+    <div class="container  py-3 bg-dark border border-info rounded-lg my-3 ">
 
-<ul>
+        <form action="{{ url_for('send_it') }}" method="POST" enctype="multipart/form-data">
+            <textarea id="message" name="message" class="form-control text-light border-0 shadow-none bg-dark" rows="5"
+                placeholder="Insert message"></textarea>
+
+            <div class="d-flex justify-content-between p-2">
+                <input type="file" name="file" id="file-input" style="display: none;">
+                <button type="button" class="btn btn-info btn-lg"
+                    onclick="document.getElementById('file-input').click();"><i class="bi bi-upload"></i> Upload </button>
+
+                <input type="hidden" value="submit" >
+                <button class="btn btn-info btn-lg" type="submit"><i class="bi bi-send"></i></button>
+
+            </div>
+        </form>
+
+    </div>
+
     {% for item in items %}
-    <li>
-        {% if item.type == 'message' %}
-        {{ item.message|urlize }} ({{ item.timestamp }})
-        <button onclick="copyToClipboard('{{ item.message }}')">Copy</button>
-        <form method="POST" action="{{ url_for('delete_message', id=item.id) }}" style="display:inline;">
-            <input type="hidden" name="id" value="{{ item.id }}">
-            <button type="submit">Delete</button>
-        </form>
-        {% else %}
-        <img src="{{ url_for('download_file', filename=item.name) }}" width="50px" alt="Image">
-        {{ item.name }} ({{ item.timestamp }})
-        <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
-            <button type="submit">Download</button>
-        </form>
-        <form method="POST" action="{{ url_for('delete_file', id=item.id) }}" style="display:inline;">
-            <input type="hidden" name="id" value="{{ item.id }}">
-            <button type="submit">Delete</button>
-        </form>
-        {% endif %}
-    </li>
+    <div class="container  bg-dark  text-break mb-3 rounded-lg">
+        <div class="d-flex bd-highlight text-muted fw-lighter ">
+            <p><small>{{ item.timestamp }}</small></p>
+        </div>
+        <div class="d-flex pb-3 bd-highlight ">
+
+            {% if item.type == 'message' %}
+            <div class="mr-auto  bd-highlight text-light align-self-center">
+                {{ item.message|urlize }}
+            </div>
+            <div class="p-2 bd-highlight align-self-center">
+                <button class=" btn btn-dark border-0" onclick="copyToClipboard('{{ item.message }}')"><i
+                        class="bi bi-clipboard text-info btn-lg"></i></button>
+            </div>
+            <div class="py-2 bd-highlight align-self-center">
+                <form method="POST" action="{{ url_for('delete_message', id=item.id) }}" style="display:inline;">
+                    <input type="hidden" name="id" value="{{ item.id }}">
+                    <button class="btn btn-dark border-0 btn-lg" type="submit"><i class="bi bi-trash text-info"></i></button>
+                </form>
+            </div>
+
+            {% else %}
+            <div class="mr-auto  bd-highlight text-light align-self-center">
+                <img src="{{ url_for('download_file', filename=item.name) }}" height="80px" alt="Image">
+                {{ item.name }}
+            </div>
+            <div class="p-2 bd-highlight align-self-center">
+                <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
+                    <button class="btn btn-dark border-0" type="submit"><i
+                            class="bi bi-download text-info btn-lg"></i></button>
+                </form>
+            </div>
+            <div class="py-2 bd-highlight align-self-center">
+                <form method="POST" action="{{ url_for('delete_file', id=item.id) }}" style="display:inline;">
+                    <input type="hidden" name="id" value="{{ item.id }}">
+                    <button class="btn btn-dark btn-lg border-0 " type="submit"><i class="bi bi-trash text-info"></i></button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
+
+
+
+
 <script>
     function copyToClipboard(text) {
         var tempInput = document.createElement('input');

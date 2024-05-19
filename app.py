@@ -25,20 +25,48 @@ def index():
     return render_template('index.html', items=items)
 
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return redirect(url_for('index'))
-
-    file = request.files['file']
-
-    if file.filename == '':
-        return redirect(url_for('index'))
+@app.route('/submit', methods=['POST'])
+def send_it():
+    message = request.form.get('message')
+    file = request.files.get('file')
     
     timestamp = db.command('serverStatus')['localTime']
-    fs.put(file, filename=file.filename, uploadDate=timestamp)
+
+    if message:
+        messages.insert_one({'message': message, 'type': 'message', 'uploadDate': timestamp})
+
+    if file and file.filename != '':
+        fs.put(file, filename=file.filename, uploadDate=timestamp)
+
     return redirect(url_for('index'))
+
+
+
+# @app.route('/upload', methods=['POST'])
+# def upload_file():
+#     if 'file' not in request.files:
+#         return redirect(url_for('index'))
+
+#     file = request.files['file']
+
+#     if file.filename == '':
+#         return redirect(url_for('index'))
     
+#     timestamp = db.command('serverStatus')['localTime']
+#     fs.put(file, filename=file.filename, uploadDate=timestamp)
+#     return redirect(url_for('index'))
+    
+
+# @app.route('/message', methods=['POST'])
+# def add_message():
+#     if 'message' not in request.form:
+#         return redirect(url_for('index'))
+    
+#     message = request.form['message']
+#     timestamp = db.command('serverStatus')['localTime']
+#     messages.insert_one({'message': message, 'type': 'message', 'uploadDate': timestamp})
+
+#     return redirect(url_for('index'))
 
 @app.route('/downloads/<filename>')
 def download_file(filename):
@@ -56,16 +84,6 @@ def delete_file(id):
     return redirect(url_for('index'))
 
 
-@app.route('/message', methods=['POST'])
-def add_message():
-    if 'message' not in request.form:
-        return redirect(url_for('index'))
-    
-    message = request.form['message']
-    timestamp = db.command('serverStatus')['localTime']
-    messages.insert_one({'message': message, 'type': 'message', 'uploadDate': timestamp})
-
-    return redirect(url_for('index'))
 
 
 @app.route('/delete_message/<id>', methods=['POST'])
