@@ -19,23 +19,12 @@ fs = gridfs.GridFS(db)
 
 @app.route('/')
 def index():
-    # 从 GridFS 中检索文件元数据
-    files = [
-        {'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.metadata['timestamp'], 'batch_id': f.metadata['batch_id']}
-        for f in fs.find()
-    ]
-    # 从 messages 集合中检索消息数据
-    messages_list = [
-        {'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate'], 'batch_id': m['batch_id']}
-        for m in messages.find()
-    ]
-
-    # 将文件和消息合并
-    items = files + messages_list
-    # 根据 batch_id 分组
-    items.sort(key=lambda x: x['timestamp'], reverse=True)
+    files = [{'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.metadata['timestamp'], 'batch_id': f.metadata['batch_id']} for f in fs.find()]
+    messages_list = [{'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate'], 'batch_id': m['batch_id']} for m in messages.find()]
     
-    # 分组显示
+    items = files + messages_list
+    items.sort(key=lambda x: x['timestamp'], reverse=True)
+    # Group items by batch_id
     grouped_items = {}
     for item in items:
         batch_id = item['batch_id']
@@ -46,10 +35,11 @@ def index():
     return render_template('index.html', grouped_items=grouped_items)
 
 
+
 @app.route('/submit', methods=['POST'])
 def send_it():
     message = request.form.get('message')
-    file = request.files.get('file')
+    files = request.files.getlist('file')  # 使用 getlist 获取多个文件
 
     timestamp = datetime.now().replace(microsecond=0)
     batch_id = str(uuid4())  # 生成唯一的批次ID
@@ -62,10 +52,12 @@ def send_it():
             'batch_id': batch_id
         })
 
-    if file and file.filename != '':
-        fs.put(file, filename=file.filename, metadata={'timestamp': timestamp, 'batch_id': batch_id})
+    for file in files:
+        if file and file.filename != '':
+            fs.put(file, filename=file.filename, metadata={'timestamp': timestamp, 'batch_id': batch_id})
 
     return redirect(url_for('index'))
+
 
 
 
@@ -103,20 +95,18 @@ def download_file(filename):
     return 'File not found', 404
 
 
-@app.route('/delete/<id>', methods=['POST'])
-def delete_file(id):
-    file = fs.find_one({'_id': ObjectId(id)})
-    if file:
+@app.route('/delete_batch/<batch_id>', methods=['POST'])
+def delete_batch(batch_id):
+    # Delete messages in the batch
+    messages.delete_many({'batch_id': batch_id})
+
+    # Find files in the batch
+    files = fs.find({'metadata.batch_id': batch_id})
+    for file in files:
         fs.delete(file._id)
+    
     return redirect(url_for('index'))
 
-
-
-
-@app.route('/delete_message/<id>', methods=['POST'])
-def delete_message(id):
-    messages.delete_one({'_id': ObjectId(id)})
-    return redirect(url_for('index'))
 
  
 
