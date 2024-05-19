@@ -4,23 +4,31 @@
 
 {% block body %}
 <div class="container">
-    <div class="container  py-3 bg-dark border border-info rounded-lg my-3 ">
-
+    <div class="container py-1 bg-dark border border-info rounded-lg my-3">
         <form action="{{ url_for('send_it') }}" method="POST" enctype="multipart/form-data">
             <textarea id="message" name="message" class="form-control text-light border-0 shadow-none bg-dark" rows="5"
                 placeholder="Insert message"></textarea>
 
-            <div class="d-flex justify-content-between p-2">
-                <input type="file" name="file" id="file-input" style="display: none;">
-                <button type="button" class="btn btn-info btn-lg"
-                    onclick="document.getElementById('file-input').click();"><i class="bi bi-upload"></i> Upload </button>
 
-                <input type="hidden" value="submit" >
-                <button class="btn btn-info btn-lg" type="submit"><i class="bi bi-send"></i></button>
-
+            <div class="d-flex bd-highlight ">
+                <div class="p-2 bd-highlight">
+                    <label for="file-input" class="btn btn-info btn-lg">
+                        <i class="bi bi-upload"></i> Upload
+                    </label>
+                </div>
+                <input type="file" name="file" id="file-input"  multiple style="display: none;" onchange="previewFile()">
+                <div class="p-2 flex-grow-1 bd-highlight align-self-center">
+                    <div id="file-preview"></div>
+                </div>
+                <input type="hidden" value="submit">
+                <!-- 提交按钮 -->
+                <div class="ms-auto p-2 bd-highlight">
+                    <button class="btn btn-info btn-lg" type="submit">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
             </div>
         </form>
-
     </div>
 
     {% for item in items %}
@@ -41,7 +49,8 @@
             <div class="py-2 bd-highlight align-self-center">
                 <form method="POST" action="{{ url_for('delete_message', id=item.id) }}" style="display:inline;">
                     <input type="hidden" name="id" value="{{ item.id }}">
-                    <button class="btn btn-dark border-0 btn-lg" type="submit"><i class="bi bi-trash text-info"></i></button>
+                    <button class="btn btn-dark border-0 btn-lg" type="submit"><i
+                            class="bi bi-trash text-info"></i></button>
                 </form>
             </div>
 
@@ -59,7 +68,8 @@
             <div class="py-2 bd-highlight align-self-center">
                 <form method="POST" action="{{ url_for('delete_file', id=item.id) }}" style="display:inline;">
                     <input type="hidden" name="id" value="{{ item.id }}">
-                    <button class="btn btn-dark btn-lg border-0 " type="submit"><i class="bi bi-trash text-info"></i></button>
+                    <button class="btn btn-dark btn-lg border-0 " type="submit"><i
+                            class="bi bi-trash text-info"></i></button>
                 </form>
             </div>
             {% endif %}
@@ -79,6 +89,19 @@
         tempInput.select();
         document.execCommand('copy');
         document.body.removeChild(tempInput);
+    }
+    function previewFile() {
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.getElementById('file-preview');
+
+        filePreview.innerHTML = ''; // 清空之前的预览内容
+
+        const files = fileInput.files;
+        for (const file of files) {
+            const fileName = document.createElement('p');
+            fileName.textContent = file.name;
+            filePreview.appendChild(fileName);
+        }
     }
 </script>
 

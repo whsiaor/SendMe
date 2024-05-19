@@ -18,10 +18,13 @@ fs = gridfs.GridFS(db)
 
 @app.route('/')
 def index():
-    files = [{'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.upload_date} for f in fs.find()]
+    # 从 GridFS 中检索文件元数据
+    files = [{'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.metadata['timestamp']} for f in fs.find()]
+    # 从 messages 集合中检索消息数据
     message = [{'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate']} for m in messages.find()]
+    
     items = files + message
-    items.sort(key=lambda x: x['timestamp'], reverse=True)
+    items.sort(key=lambda x: x['timestamp'], reverse=True)  # 按照时间戳排序
     return render_template('index.html', items=items)
 
 
@@ -29,14 +32,15 @@ def index():
 def send_it():
     message = request.form.get('message')
     file = request.files.get('file')
-    
-    timestamp = db.command('serverStatus')['localTime']
+
+    timestamp = datetime.now().replace(microsecond=0)
 
     if message:
         messages.insert_one({'message': message, 'type': 'message', 'uploadDate': timestamp})
 
     if file and file.filename != '':
-        fs.put(file, filename=file.filename, uploadDate=timestamp)
+        # 使用 timestamp 字段存储文件的时间戳
+        fs.put(file, filename=file.filename, metadata={'timestamp': timestamp})
 
     return redirect(url_for('index'))
 
