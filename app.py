@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 from bson import ObjectId
 from flask import Flask, redirect, render_template, request, send_file, send_from_directory, url_for
 from datetime import datetime
@@ -19,13 +20,30 @@ fs = gridfs.GridFS(db)
 @app.route('/')
 def index():
     # 从 GridFS 中检索文件元数据
-    files = [{'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.metadata['timestamp']} for f in fs.find()]
+    files = [
+        {'id': str(f._id), 'name': f.filename, 'type': 'file', 'timestamp': f.metadata['timestamp'], 'batch_id': f.metadata['batch_id']}
+        for f in fs.find()
+    ]
     # 从 messages 集合中检索消息数据
-    message = [{'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate']} for m in messages.find()]
+    messages_list = [
+        {'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate'], 'batch_id': m['batch_id']}
+        for m in messages.find()
+    ]
+
+    # 将文件和消息合并
+    items = files + messages_list
+    # 根据 batch_id 分组
+    items.sort(key=lambda x: x['timestamp'], reverse=True)
     
-    items = files + message
-    items.sort(key=lambda x: x['timestamp'], reverse=True)  # 按照时间戳排序
-    return render_template('index.html', items=items)
+    # 分组显示
+    grouped_items = {}
+    for item in items:
+        batch_id = item['batch_id']
+        if batch_id not in grouped_items:
+            grouped_items[batch_id] = []
+        grouped_items[batch_id].append(item)
+
+    return render_template('index.html', grouped_items=grouped_items)
 
 
 @app.route('/submit', methods=['POST'])
@@ -34,13 +52,18 @@ def send_it():
     file = request.files.get('file')
 
     timestamp = datetime.now().replace(microsecond=0)
+    batch_id = str(uuid4())  # 生成唯一的批次ID
 
     if message:
-        messages.insert_one({'message': message, 'type': 'message', 'uploadDate': timestamp})
+        messages.insert_one({
+            'message': message,
+            'type': 'message',
+            'uploadDate': timestamp,
+            'batch_id': batch_id
+        })
 
     if file and file.filename != '':
-        # 使用 timestamp 字段存储文件的时间戳
-        fs.put(file, filename=file.filename, metadata={'timestamp': timestamp})
+        fs.put(file, filename=file.filename, metadata={'timestamp': timestamp, 'batch_id': batch_id})
 
     return redirect(url_for('index'))
 
