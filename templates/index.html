@@ -5,7 +5,7 @@
 {% block body %}
 <div class="container">
     <div class="container py-1 bg-dark border border-info rounded-lg my-3">
-        <form action="{{ url_for('send_it') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ url_for('upload_it') }}" method="POST" enctype="multipart/form-data">
             <textarea id="message" name="message" class="form-control text-light border-0 shadow-none bg-dark" rows="5"
                 placeholder="Insert message"></textarea>
 
