@@ -1,0 +1,18 @@
+body {
+    background-color: #121212; /* 深色背景 */
+    color: #ffffff;           /* 浅色文本 */
+}
+input[type="file"] {
+    display: none;
+}
+/* 定义自定义按钮样式 */
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 16px;
+}

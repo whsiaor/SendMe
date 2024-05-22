@@ -1,5 +1,5 @@
-Flask
-pymongo
-boto3
-python-dotenv
-Werkzeug
+Flask==3.0.3
+pymongo==4.7.2
+boto3==1.34.110
+python-dotenv==1.0.1
+Werkzeug==3.0.3
