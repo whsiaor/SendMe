@@ -23,31 +23,26 @@ s3 = boto3.client(
 )
 s3_bucket_name = os.getenv('AWS_BUCKET_NAME')
 
-# 定义您的本地时区（例如，东八区UTC+8）
 local_timezone = timezone(timedelta(hours=10))
 
 @app.route('/')
 def index():
-    s3_objects = s3.list_objects_v2(Bucket=s3_bucket_name).get('Contents', [])
-    files = []
-    for obj in s3_objects:
-        try:
-            head_obj = s3.head_object(Bucket=s3_bucket_name, Key=obj['Key'])
-            metadata = head_obj.get('Metadata', {})
-            timestamp = obj['LastModified'].astimezone(local_timezone)  # Convert to local timezone
-            # 将时间戳转换为字符串并去掉时区信息
-            timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            files.append({
-                'id': obj['Key'],
-                'name': obj['Key'],
-                'type': 'file',
-                'timestamp': timestamp_str,
-                'batch_id': metadata.get('batch_id', 'N/A')
-            })
-        except Exception as e:
-            print(f"Error processing object {obj['Key']}: {e}")
+    messages_list = [{
+                'id': str(m['_id']),
+                'message': m['message'], 
+                'type': 'message', 
+                'timestamp': m['uploadDate'] ,
+                'batch_id': m['batch_id']} 
+                for m in messages.find({'type': 'message'})]
 
-    messages_list = [{'id': str(m['_id']), 'message': m['message'], 'type': 'message', 'timestamp': m['uploadDate'].astimezone(local_timezone).strftime('%Y-%m-%d %H:%M:%S'), 'batch_id': m['batch_id']} for m in messages.find()]
+    files = [{
+                'id': str(f['_id']),
+                'name': f['name'],
+                'type': 'file', 
+                'timestamp': f['uploadDate'] ,
+                'batch_id': f['batch_id']}
+                for f in messages.find({'type': 'file'})]
+    
 
     items = files + messages_list
     items.sort(key=lambda x: x['timestamp'], reverse=True)
@@ -81,19 +76,18 @@ def upload_it():
     for file in files:
         if file and file.filename != '':
             filename = secure_filename(file.filename)
-            s3.upload_fileobj(
-                file,
-                s3_bucket_name,
-                filename,
-                ExtraArgs={
-                    'Metadata': {
-                        'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S'),  # 将时间戳转换为字符串
-                        'batch_id': batch_id
-                    }
-                }
-            )
+            s3.upload_fileobj(file, s3_bucket_name, filename)
+            file_url = f"https://s3.{os.getenv('AWS_REGION')}.amazonaws.com/{os.getenv('AWS_BUCKET_NAME')}/{filename}"
+            messages.insert_one({
+                'name': filename,
+                'url': file_url,
+                'type': 'file',
+                'uploadDate': timestamp,
+                'batch_id': batch_id
+            })
 
     return redirect(url_for('index'))
+
 
 @app.route('/downloads/<filename>')
 def download_file(filename):
