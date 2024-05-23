@@ -23,9 +23,10 @@ jobs:
           cd /home/ec2-user
           if [ -d "SendMe" ]; then
             cd SendMe
-            git pull
+            git fetch origin
+            git reset --hard origin/main
           else
-            git clone https://github.com/whsiaor/SendMe.git 
+            git clone https://github.com/whsiaor/SendMe.git             
             cd SendMe
           fi
           docker build -t sendme:latest .
