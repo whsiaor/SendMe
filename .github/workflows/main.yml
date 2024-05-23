@@ -1,0 +1,43 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Upload .env to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: ".env"
+        target: "/home/ec2-user/SendMe/.env"
+
+    - name: SSH to EC2 and deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ec2-user
+          if [ -d "SendMe" ]; then
+            cd SendMe
+            git pull
+          else
+            git clone https://github.com/whsiaor/SendMe.git 
+            cd SendMe
+          fi
+          docker build -t sendme:latest .
+          docker stop sendme || true
+          docker rm sendme || true
+          docker run -d --name sendme --env-file .env -p 80:8000 sendme:latest
