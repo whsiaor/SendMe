@@ -30,6 +30,7 @@ jobs:
             cd SendMe
           fi
           docker build -t sendme:latest .
+          docker volume create mongodb_data || true  # 创建数据卷，如果已存在则忽略错误
           docker stop sendme || true
           docker rm sendme || true
-          docker run -d --name sendme --env-file .env -p 80:8000 sendme:latest
+          docker run -d --name sendme -v mongodb_data:/data/db --link mongodb:mongo -p 8080:8000 sendme:latest  # 映射数据卷并连接到 MongoDB 容器
