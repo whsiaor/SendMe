@@ -6,6 +6,8 @@ from pymongo import MongoClient
 import boto3
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import pytz
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -62,7 +64,7 @@ def upload_it():
     message = request.form.get('message')
     files = request.files.getlist('file')
 
-    timestamp = datetime.now().replace(microsecond=0)  # Ensure local timezone
+    timestamp = datetime.now(pytz.timezone('Australia/Brisbane')).strftime('%Y/%m/%d %H:%M:%S') # Ensure local timezone
     batch_id = str(uuid4())
 
     if message:
