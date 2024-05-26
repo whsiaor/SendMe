@@ -17,6 +17,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secretkey') # for sqlite3
+app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
 
 # MongoDB client
 client = MongoClient(os.getenv('MONGODB_DOMAIN'))
@@ -181,10 +182,11 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        remember = request.form.get('remember') == 'on'
         user = verify_user(username, password)
         if user:
-            login_user(user)
-            flash('Logging Successfully!')
+            login_user(user, remember=remember)
+            
             return redirect(url_for('index'))
         else:
             flash('Invalid username or password')
