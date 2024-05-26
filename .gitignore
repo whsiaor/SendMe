@@ -2,3 +2,5 @@
 *.env
 *.ipynb
 *.pem
+.DS_Store
+test.html

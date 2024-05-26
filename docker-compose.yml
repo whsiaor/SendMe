@@ -1,0 +1,16 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+
+  sendme:
+    build: .
+    ports:
+      - "8080:8000"
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
