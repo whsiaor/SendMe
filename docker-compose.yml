@@ -1,12 +1,15 @@
-version: '3'
+version: '3.8'
+
 services:
   mongodb:
     image: mongo
+    container_name: mongodb
     volumes:
       - mongodb_data:/data/db
 
-  sendme:
-    build: .
+  app:
+    image: .
+    container_name: sendme
     ports:
       - "8080:8000"
     depends_on:
