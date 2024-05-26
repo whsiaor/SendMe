@@ -12,7 +12,7 @@
             <div class="d-flex bd-highlight ">
                 <div class="p-2 bd-highlight">
                     <label for="file-input" class="btn btn-info btn-lg">
-                        <i class="bi bi-plus-lg"></i>  File
+                        <i class="bi bi-plus-lg"></i> File
                     </label>
                 </div>
                 <input type="file" name="file" id="file-input" multiple style="display: none;" onchange="previewFile()">
@@ -35,8 +35,11 @@
             <div class="d-flex justify-content-between bd-highlight text-muted fw-lighter">
                 <p><small>{{ items[0].timestamp }}</small></p>
                 <div class="bd-highlight">
-                    <form method="POST" action="{{ url_for('delete_batch', batch_id=batch_id) }}" style="display:inline;">
-                        <button class="btn btn-dark btn-sm border-0" type="submit"><i class="bi bi-x text-muted"></i></button>
+                    <form method="POST" action="{{ url_for('delete_batch', batch_id=batch_id) }}"
+                        style="display:inline;">
+                        <button class="btn btn-dark btn-sm border-0" type="submit">
+                            <i class="bi bi-x text-muted"></i>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -47,7 +50,10 @@
                     {{ item.message|urlize }}
                 </div>
                 <div class="p-2 bd-highlight align-self-center">
-                    <button class="btn btn-dark border-0" onclick="copyToClipboard('{{ item.message }}')"><i class="bi bi-clipboard text-info btn-lg"></i></button>
+                    <button class="btn btn-dark border-0 copy-btn"
+                        onclick="copyToClipboard('{{ item.message }}', this)">
+                        <i class="bi bi-clipboard text-info btn-lg"></i>
+                    </button>
                 </div>
                 {% else %}
                 <div class="mr-auto bd-highlight text-light align-self-center">
@@ -55,8 +61,10 @@
                     {{ item.name }}
                 </div>
                 <div class="p-2 bd-highlight align-self-center">
-                    <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
-                        <button class="btn btn-dark border-0" type="submit"><i class="bi bi-download text-info btn-lg"></i></button>
+                    <form method="GET" action="{{ url_for('download_file', filename=item.name) }}"
+                        style="display:inline;">
+                        <button class="btn btn-dark border-0" type="submit"><i
+                                class="bi bi-download text-info btn-lg"></i></button>
                     </form>
                 </div>
                 {% endif %}
@@ -71,15 +79,15 @@
 <script>
     const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-    socket.on('new_message', function(data) {
+    socket.on('new_message', function (data) {
         addNewItem(data);
     });
 
-    socket.on('new_file', function(data) {
+    socket.on('new_file', function (data) {
         addNewItem(data);
     });
 
-    socket.on('delete_batch', function(data) {
+    socket.on('delete_batch', function (data) {
         const batchId = data.batch_id;
         const batchElement = document.querySelector(`[data-batch-id="${batchId}"]`);
         if (batchElement) {
@@ -133,13 +141,21 @@
         batchElement.appendChild(itemElement);
     }
 
-    function copyToClipboard(text) {
+
+    function copyToClipboard(text, button) {
         var tempInput = document.createElement('input');
         tempInput.value = text;
         document.body.appendChild(tempInput);
         tempInput.select();
         document.execCommand('copy');
         document.body.removeChild(tempInput);
+
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-clipboard-check text-success btn-lg"></i>';
+
+        setTimeout(() => {
+            button.innerHTML = originalIcon;
+        }, 2000);
     }
 
     function previewFile() {
@@ -156,7 +172,7 @@
         }
     }
 
-    document.getElementById('message').addEventListener('keydown', function(event) {
+    document.getElementById('message').addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && (event.ctrlKey || !event.shiftKey)) {
             event.preventDefault();
             document.getElementById('uploadForm').submit();
