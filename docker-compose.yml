@@ -8,7 +8,7 @@ services:
       - mongodb_data:/data/db
 
   app:
-    image: .
+    build: .
     container_name: sendme
     ports:
       - "8080:8000"
