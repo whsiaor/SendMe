@@ -2,6 +2,7 @@ import os
 from uuid import uuid4
 from flask import Flask, flash, redirect, render_template, request, url_for, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime, timezone, timedelta
 from pymongo import MongoClient
 import boto3
@@ -18,6 +19,7 @@ app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secretkey') # for sqlite3
 app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
+socketio = SocketIO(app)
 
 # MongoDB client
 client = MongoClient(os.getenv('MONGODB_DOMAIN'))
@@ -128,6 +130,12 @@ def upload_it():
             'uploadDate': timestamp,
             'batch_id': batch_id
         })
+        socketio.emit('new_message', {
+            'message': message, 
+            'type': 'message', 
+            'timestamp': timestamp,
+            'batch_id': batch_id
+            }, to=None)
 
     for file in files:
         if file and file.filename != '':
@@ -141,6 +149,14 @@ def upload_it():
                 'uploadDate': timestamp,
                 'batch_id': batch_id
             })
+            socketio.emit('new_file', {
+                'name': filename,
+                'url': file_url,
+                'type': 'file',
+                'uploadDate': timestamp,
+                'batch_id': batch_id
+                }, to=None)
+
 
     return redirect(url_for('index'))
 
@@ -173,7 +189,7 @@ def delete_batch(batch_id):
                 s3.delete_object(Bucket=s3_bucket_name, Key=obj['Key'])
         except Exception as e:
             print(f"Error deleting object {obj['Key']}: {e}")
-
+    socketio.emit('delete_batch', {'batch_id': batch_id}, to=None)
     return redirect(url_for('index'))
 
 
@@ -211,6 +227,14 @@ def register():
 
     return render_template('register.html')
 
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    socketio.run(app, host='0.0.0.0', port=8000)

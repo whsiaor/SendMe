@@ -29,43 +29,110 @@
         </form>
     </div>
 
-    {% for batch_id, items in grouped_items.items() %}
-    <div class=" bg-dark text-break pl-3 mb-3 rounded-lg">
-        <div class="d-flex justify-content-between bd-highlight text-muted fw-lighter">
-            <p><small>{{ items[0].timestamp }}</small></p>
-            <div class="bd-highlight">
-                <form method="POST" action="{{ url_for('delete_batch', batch_id=batch_id) }}" style="display:inline;">
-                    <button class="btn btn-dark btn-sm border-0" type="submit"><i class="bi bi-x text-muted"></i></button>
-                </form>
+    <div id="items-container">
+        {% for batch_id, items in grouped_items.items() %}
+        <div class="bg-dark text-break pl-3 mb-3 rounded-lg" data-batch-id="{{ batch_id }}">
+            <div class="d-flex justify-content-between bd-highlight text-muted fw-lighter">
+                <p><small>{{ items[0].timestamp }}</small></p>
+                <div class="bd-highlight">
+                    <form method="POST" action="{{ url_for('delete_batch', batch_id=batch_id) }}" style="display:inline;">
+                        <button class="btn btn-dark btn-sm border-0" type="submit"><i class="bi bi-x text-muted"></i></button>
+                    </form>
+                </div>
             </div>
-        </div>
-        {% for item in items %}
-        <div class="d-flex pb-3 bd-highlight">
-            {% if item.type == 'message' %}
-            <div class="mr-auto bd-highlight text-light align-self-center">
-                {{ item.message|urlize }}
+            {% for item in items %}
+            <div class="d-flex pb-3 bd-highlight">
+                {% if item.type == 'message' %}
+                <div class="mr-auto bd-highlight text-light align-self-center">
+                    {{ item.message|urlize }}
+                </div>
+                <div class="p-2 bd-highlight align-self-center">
+                    <button class="btn btn-dark border-0" onclick="copyToClipboard('{{ item.message }}')"><i class="bi bi-clipboard text-info btn-lg"></i></button>
+                </div>
+                {% else %}
+                <div class="mr-auto bd-highlight text-light align-self-center">
+                    <img src="{{ item.url }}" height="80px" alt="Image">
+                    {{ item.name }}
+                </div>
+                <div class="p-2 bd-highlight align-self-center">
+                    <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
+                        <button class="btn btn-dark border-0" type="submit"><i class="bi bi-download text-info btn-lg"></i></button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
-            <div class="p-2 bd-highlight align-self-center">
-                <button class="btn btn-dark border-0" onclick="copyToClipboard('{{ item.message }}')"><i class="bi bi-clipboard text-info btn-lg"></i></button>
-            </div>
-            {% else %}
-            <div class="mr-auto bd-highlight text-light align-self-center">
-                <img src="{{ url_for('download_file', filename=item.name) }}" height="80px" alt="Image">
-                {{ item.name }}
-            </div>
-            <div class="p-2 bd-highlight align-self-center">
-                <form method="GET" action="{{ url_for('download_file', filename=item.name) }}" style="display:inline;">
-                    <button class="btn btn-dark border-0" type="submit"><i class="bi bi-download text-info btn-lg"></i></button>
-                </form>
-            </div>
-            {% endif %}
+            {% endfor %}
         </div>
         {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 <script>
+    const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('new_message', function(data) {
+        addNewItem(data);
+    });
+
+    socket.on('new_file', function(data) {
+        addNewItem(data);
+    });
+
+    socket.on('delete_batch', function(data) {
+        const batchId = data.batch_id;
+        const batchElement = document.querySelector(`[data-batch-id="${batchId}"]`);
+        if (batchElement) {
+            batchElement.remove();
+        }
+    });
+
+    function addNewItem(data) {
+        const container = document.getElementById('items-container');
+        const batchId = data.batch_id;
+        let batchElement = document.querySelector(`[data-batch-id="${batchId}"]`);
+
+        if (!batchElement) {
+            batchElement = document.createElement('div');
+            batchElement.classList.add('bg-dark', 'text-break', 'pl-3', 'mb-3', 'rounded-lg');
+            batchElement.setAttribute('data-batch-id', batchId);
+
+            const header = document.createElement('div');
+            header.classList.add('d-flex', 'justify-content-between', 'bd-highlight', 'text-muted', 'fw-lighter');
+            header.innerHTML = `<p><small>${data.timestamp}</small></p>
+                                <div class="bd-highlight">
+                                    <form method="POST" action="/delete_batch/${batchId}" style="display:inline;">
+                                        <button class="btn btn-dark btn-sm border-0" type="submit"><i class="bi bi-x text-muted"></i></button>
+                                    </form>
+                                </div>`;
+            batchElement.appendChild(header);
+
+            container.insertBefore(batchElement, container.firstChild);
+        }
+
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('d-flex', 'pb-3', 'bd-highlight');
+
+        if (data.type === 'message') {
+            itemElement.innerHTML = `<div class="mr-auto bd-highlight text-light align-self-center">${data.message}</div>
+                                     <div class="p-2 bd-highlight align-self-center">
+                                         <button class="btn btn-dark border-0" onclick="copyToClipboard('${data.message}')"><i class="bi bi-clipboard text-info btn-lg"></i></button>
+                                     </div>`;
+        } else if (data.type === 'file') {
+            itemElement.innerHTML = `<div class="mr-auto bd-highlight text-light align-self-center">
+                                         <img src="${data.url}" height="80px" alt="Image">
+                                         ${data.name}
+                                     </div>
+                                     <div class="p-2 bd-highlight align-self-center">
+                                         <form method="GET" action="/downloads/${data.name}" style="display:inline;">
+                                             <button class="btn btn-dark border-0" type="submit"><i class="bi bi-download text-info btn-lg"></i></button>
+                                         </form>
+                                     </div>`;
+        }
+
+        batchElement.appendChild(itemElement);
+    }
+
     function copyToClipboard(text) {
         var tempInput = document.createElement('input');
         tempInput.value = text;
