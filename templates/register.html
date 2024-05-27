@@ -3,21 +3,27 @@
 {% block head %}register{% endblock %}
 
 {% block body %}
-<h1>Register</h1>
-<form method="POST" action="{{ url_for('register') }}">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
-    <button type="submit">Register</button>
-</form>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
+<div class="container">
+    <h3 class="text-center text-info my-3">Register</h3>
+    <div class="container bg-dark border border-info rounded-lg px-5 py-5" style="max-width: 500px;">
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <input class="form-control mb-3" type="text" id="username" name="username" placeholder="username" required>
+            <input class="form-control mb-3" type="password" id="password" name="password" placeholder="password" required>
+            <div class="d-flex bd-highlight mt-3">
+                <button type="submit" class="btn btn-info btn-lg btn-block">Register</button>
+            </div>
+
+        </form>
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    
+        {% for message in messages %}
+        <li class="text-center text-danger">{{ message }}</li>
+        {% endfor %}
+    
+    {% endif %}
+    {% endwith %}
+</div>
 {% endblock %}

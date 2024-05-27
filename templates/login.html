@@ -3,24 +3,32 @@
 {% block head %}login{% endblock %}
 
 {% block body %}
-<h1>login</h1>
-<form method="POST" action="{{ url_for('login') }}">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
-    <input type="checkbox" name="remember" id="remember">
-    <label for="remember">Remember Me</label>
-    <button type="submit">Login</button>
+<div class="container">
+    <h3 class="text-center text-info my-3">Login</h3>
+    <div class="container bg-dark border border-info rounded-lg px-5 py-5" style="max-width: 500px;">
 
-</form>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
+        <form method="POST" action="{{ url_for('login') }}">
+            <input class="form-control mb-3" type="text" id="username" name="username" placeholder="username">
+            <input class="form-control mb-3" type="password" id="password" name="password" placeholder="password">
+
+
+            <input type="checkbox" name="remember" id="remember">
+            <label for="remember">Remember Me</label>
+
+            <div class="d-flex bd-highlight mt-3">
+                <button type="submit" class="btn btn-info  btn-lg btn-block">Login</button>
+            </div>
+
+        </form>
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    
+        {% for message in messages %}
+        <li class="text-center text-danger">{{ message }}</li>
+        {% endfor %}
+    
+    {% endif %}
+    {% endwith %}
+</div>
 {% endblock %}

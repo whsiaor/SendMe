@@ -1,4 +1,5 @@
 import os
+import re
 from uuid import uuid4
 from flask import Flask, flash, redirect, render_template, request, url_for, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -78,6 +79,15 @@ def verify_user(username, password):
     conn.close()
     if user and check_password_hash(user[1], password):
         return User(id=user[0], username=username)
+
+
+def username_exists(username):
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    user = cursor.fetchone()
+    conn.close()
+    return user is not None
 
 
 @app.route('/')
@@ -221,6 +231,28 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
+        if not username or not password:
+            flash('Username and password are required.')
+            return redirect(url_for('register'))
+        
+        if len(username) < 3 or len(username) > 20:
+            flash('Username must be between 3 and 20 characters.')
+            return redirect(url_for('register'))
+        if len(password) < 6:
+            flash('Password must be at least 6 characters.')
+            return redirect(url_for('register'))
+
+        # 檢查用戶名格式
+        if not re.match("^[a-zA-Z0-9_]+$", username):
+            flash('Username can only contain letters, numbers, and underscores.')
+            return redirect(url_for('register'))
+        
+        # 檢查用戶名是否已存在
+        if username_exists(username):
+            flash('Username already exists.')
+            return redirect(url_for('register'))
+        
         create_user(username, password)
         flash('Registered!')
         return redirect(url_for('login'))
