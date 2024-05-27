@@ -124,7 +124,7 @@
         if (data.type === 'message') {
             itemElement.innerHTML = `<div class="mr-auto bd-highlight text-light align-self-center">${data.message}</div>
                                      <div class="p-2 bd-highlight align-self-center">
-                                         <button class="btn btn-dark border-0" onclick="copyToClipboard('${data.message}')"><i class="bi bi-clipboard text-info btn-lg"></i></button>
+                                         <button class="btn btn-dark border-0" onclick="copyToClipboard('${data.message}', this)"><i class="bi bi-clipboard text-info btn-lg"></i></button>
                                      </div>`;
         } else if (data.type === 'file') {
             itemElement.innerHTML = `<div class="mr-auto bd-highlight text-light align-self-center">
@@ -140,7 +140,6 @@
 
         batchElement.appendChild(itemElement);
     }
-
 
     function copyToClipboard(text, button) {
         var tempInput = document.createElement('input');
@@ -162,7 +161,7 @@
         const fileInput = document.getElementById('file-input');
         const filePreview = document.getElementById('file-preview');
 
-        filePreview.innerHTML = ''; // 清空之前的预览内容
+        filePreview.innerHTML = ''; // Clear previous previews
 
         const files = fileInput.files;
         for (const file of files) {
