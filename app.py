@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secretkey') # for sqlite3
 app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # MongoDB client
 client = MongoClient(os.getenv('MONGODB_DOMAIN'))
