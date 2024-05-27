@@ -104,6 +104,7 @@ def index():
     files = [{
                 'id': str(f['_id']),
                 'name': f['name'],
+                'url': f['url'],
                 'type': 'file', 
                 'timestamp': f['uploadDate'] ,
                 'batch_id': f['batch_id']}
