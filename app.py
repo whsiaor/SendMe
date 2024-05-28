@@ -23,7 +23,7 @@ app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # MongoDB client
-client = MongoClient('mongodb://mongodb:27017/')
+client = MongoClient('mongodb://127.0.0.1:27017/')
 db = client['snap']
 messages = db['messages']
 

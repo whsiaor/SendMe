@@ -1,21 +1,9 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    volumes:
-      - mongodb_data:/data/db
-    ports:
-      - "27017:27017"
-
   app:
     build: .
     container_name: sendme
+    network_mode: host  # 使用主机网络模式
     ports:
       - "8080:8000"
-    depends_on:
-      - mongodb
-
-volumes:
-  mongodb_data:
