@@ -4,6 +4,11 @@ services:
   app:
     build: .
     container_name: sendme
-    network_mode: host  # 使用主机网络模式
     ports:
       - "8080:8000"
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    external: true
