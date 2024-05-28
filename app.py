@@ -23,7 +23,7 @@ app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # MongoDB client
-client = MongoClient('mongodb://mongodb:27017/')
+client = MongoClient('mongodb://localhost:27017/')
 db = client['snap']
 messages = db['messages']
 
@@ -244,12 +244,10 @@ def register():
             flash('Password must be at least 6 characters.')
             return redirect(url_for('register'))
 
-        # 檢查用戶名格式
         if not re.match("^[a-zA-Z0-9_]+$", username):
             flash('Username can only contain letters, numbers, and underscores.')
             return redirect(url_for('register'))
         
-        # 檢查用戶名是否已存在
         if username_exists(username):
             flash('Username already exists.')
             return redirect(url_for('register'))
@@ -268,6 +266,7 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
