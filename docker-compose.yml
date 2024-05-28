@@ -6,5 +6,4 @@ services:
     container_name: sendme
     ports:
       - "8080:8000"
-    depends_on:
-      - mongodb
+
