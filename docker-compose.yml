@@ -1,14 +1,21 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
   app:
     build: .
     container_name: sendme
     ports:
       - "8080:8000"
-    networks:
-      - my_network
+    depends_on:
+      - mongodb
 
-networks:
-  my_network:
-    external: true
+volumes:
+  mongodb_data:
