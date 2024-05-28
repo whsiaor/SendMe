@@ -6,6 +6,8 @@ services:
     container_name: mongodb
     volumes:
       - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
 
   app:
     build: .
