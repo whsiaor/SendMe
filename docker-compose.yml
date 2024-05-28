@@ -4,6 +4,7 @@ services:
   app:
     build: .
     container_name: sendme
+    network_mode: host
     ports:
       - "8080:8000"
 
