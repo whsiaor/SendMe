@@ -18,8 +18,9 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secretkey') # for sqlite3
 app.config['REMEMBER_COOKEI_DURATION'] = timedelta(days=30)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secretkey') # for sqlite3
+sqlite3_db = 'users.db'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # MongoDB client
@@ -51,42 +52,50 @@ class User(UserMixin):
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    conn = sqlite3.connect('users.db')
+def load_user(user_id, conn=None):
+    if conn is None:
+        conn = sqlite3.connect(sqlite3_db)
     cursor = conn.cursor()
     cursor.execute('SELECT id, username FROM users WHERE id =?', (user_id,))
     user = cursor.fetchone()
-    conn.close()
+    if conn is None:
+        conn.close()
     if user:
         return User(id=user[0], username=user[1])
     return None
 
 
-def create_user(username, password):
+def create_user(username, password, conn=None):
     password_hash = generate_password_hash(password, method='pbkdf2:sha256')
-    conn = sqlite3.connect('users.db')
+    if conn is None:
+        conn = sqlite3.connect(sqlite3_db)
     cursor = conn.cursor()
     cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
     conn.commit()
-    conn.close()
+    if conn is None:
+        conn.close()
 
 
-def verify_user(username, password):
-    conn = sqlite3.connect('users.db')
+def verify_user(username, password, conn=None):
+    if conn is None:
+        conn = sqlite3.connect(sqlite3_db)
     cursor = conn.cursor()
     cursor.execute('SELECT id, password_hash FROM users WHERE username = ?', (username,) )
     user = cursor.fetchone()
-    conn.close()
+    if conn is None:
+        conn.close()
     if user and check_password_hash(user[1], password):
         return User(id=user[0], username=username)
 
 
-def username_exists(username):
-    conn = sqlite3.connect('users.db')
+def username_exists(username, conn=None):
+    if conn is None:
+        conn = sqlite3.connect(sqlite3_db)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
     user = cursor.fetchone()
-    conn.close()
+    if conn is None:
+        conn.close()
     return user is not None
 
 
