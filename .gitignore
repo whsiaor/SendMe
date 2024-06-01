@@ -4,3 +4,4 @@
 *.pem
 .DS_Store
 test.html
+users.db

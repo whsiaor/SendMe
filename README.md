@@ -12,7 +12,7 @@ SendMe is a web-based application designed for storing and sharing information f
 
 In everyday life, we often need to transfer screenshots, URLs, images, or files between different devices. This usually requires other applications and pre-installed software on each device. SendMe aims to eliminate this dependency, allowing you to share information across devices and operating system through a web page without needing additional software.
 
-<img src="./static/pics/screenshot_1.png" width="300px">
+<img src="./static/pics/screenshot_1.PNG" width="300px">
 
 ---
 #### Features
