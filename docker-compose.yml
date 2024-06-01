@@ -4,6 +4,9 @@ services:
   mongodb:
     image: mongo
     container_name: mongodb
+    environment:
+    MONGO_INITDB_ROOT_USERNAME: admin
+    MONGO_INITDB_ROOT_PASSWORD: securepassword
     volumes:
       - mongodb_data:/data/db
     ports:
