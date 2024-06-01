@@ -73,20 +73,20 @@ function addNewItem(data) {
 }
 
 function copyToClipboard(text, button) {
-    var tempInput = document.createElement('input');
-    tempInput.value = text;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempInput);
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            const originalIcon = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-clipboard-check text-success btn-lg"></i>';
 
-    const originalIcon = button.innerHTML;
-    button.innerHTML = '<i class="bi bi-clipboard-check text-success btn-lg"></i>';
-
-    setTimeout(() => {
-        button.innerHTML = originalIcon;
-    }, 2000);
+            setTimeout(() => {
+                button.innerHTML = originalIcon;
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
 }
+
 
 function previewFile() {
     const fileInput = document.getElementById('file-input');
