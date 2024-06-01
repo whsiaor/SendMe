@@ -43,8 +43,8 @@ The development of SendMe aims to familiarize with full-stack development, web f
 
 - **Frontend**: Built with basic CSS, JavaScript, and Bootstrap to create a simple interface.
 - **Backend**: Developed with Flask to handle CRUD operations and authentication, using sessions to store cookies and avoid repeated logins. Flask-SocketIO is used for real-time synchronization.
-- SQL database: MongoDB was chosen for storing non-relational data such as text snippets, file names, or URLs. SQLite was used to manage account credentials, providing easy management and querying.
-- **Cloud**: Files are stored on AWS S3, with the server hosted on AWS EC2. File information is stored in MongoDB, all deployed using Docker. Integrated with Github Actions to automate deployment through git push commands. Sensitive environment variables are stored separately in a .env file to ensure privacy.
+- **SQL database**: MongoDB was chosen for storing non-relational data such as text snippets, file names, or URLs. SQLite was used to manage account credentials, providing easy management and querying.
+- **Cloud**: Files are stored on AWS S3, with the server hosted on AWS EC2. File information is stored in MongoDB, deployed using Docker. Integrated with Github Actions to automate deployment through git push commands. Security environment variables are stored separately in a .env file to ensure privacy concern.
 
 ---
 #### Design Debates
@@ -65,11 +65,19 @@ AWS was chosen for the first cloud deployment experience to learn more about clo
 
 Initially, Jenkins was used for automated deployment management, but Github Actions was later chosen due to storage considerations. For small projects, Github Actions is very useful, monitoring git push commands and automating the deployment process by connecting to the server, executing git clone to replace new files, and running Docker Compose to set up the server and MongoDB server. 
 
-##### Why Not Use Docker Images Directly?
+##### Why Not Use Docker Images to Deploy Directly?
 
-To protect sensitive information, Docker containers are set up and run on the server rather than using publicly accessible Docker images. Sensitive information is uploaded separately and not shared through Github.
+To protect sercurity information, Docker containers are set up and run on the server rather than using publicly accessible Docker images. Sensitive information is uploaded separately and not shared through Github.
 
 ---
 #### Workflow
 
-File change -> git commit -> git push -> (if environment variables change, upload .env to overwrite the server's original file) -> Github Actions handles the remaining deployment tasks.
+File change -> git commit -> git push -> (if environment variables change, upload .env file to overwrite the server's original file) -> Github Actions handles the remaining deployment tasks.
+
+---
+### Summary:
+
+- I now have an overview of the full-stack process, which will make it easier to understand other projects in the future. 
+- Writing unit tests after completing the code can be difficult to organize, so next time I will write tests immediately after finishing a feature. 
+- The code optimization and organization were insufficient, so I plan to use Django next time to better understand how to allocate tasks. 
+- Some features, like pagination and date search, were not included, but the basic functionality is complete.
